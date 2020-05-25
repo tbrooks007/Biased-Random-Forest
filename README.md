@@ -1,5 +1,5 @@
 # Biased Random Forest
-This project provides a basic implementation of a Biased Random Forest (BRAF). BRAF is an ensamble method that seeks to mitigate issues caused by class imbalances in classification propblems by "adequately representing the minority class during classification." This method was proposed by M. Bader-El-Den etal in "Biased Random Forest For Dealing With the Class Imbalance Problem."
+This project provides a basic implementation of a **Biased Random Forest (BRAF)**. BRAF is an ensamble method that seeks to mitigate issues caused by class imbalances in classification propblems by "adequately representing the minority class during classification." This method was proposed by M. Bader-El-Den etal in "Biased Random Forest For Dealing With the Class Imbalance Problem."
 
 ### Possible Improvements
 
