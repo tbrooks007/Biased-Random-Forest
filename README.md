@@ -1,5 +1,5 @@
 # Biased-Random-Forest
-Basic implementation of Biased Random Forest (BRAF).
+Basic implementation of Biased Random Forest (BRAF). BRAF's is an ensamble method that seeks to mitigate issues caused by class imbalances in classification propblems by "adequately representing the minority class during classification."
 
 ### Possible Improvements
 
