@@ -10,13 +10,15 @@ class BiasedRandomForest(object):
     by Jason Brownlee in https://machinelearningmastery.com/implement-random-forest-scratch-python/
     """
 
-    def __init__(self, num_features, forest_size=100, k=10, p=0.5, maximum_depth=10):
+    def __init__(self, num_features, min_size=1, sample_size=1.0, forest_size=100, k=10, p=0.5, maximum_depth=10):
         """
 
         :param forest_size: int, forest size
         :param k: int, number of nearest neighbors
         :param p: float, critical areas ratio
         :param num_features: number of features for the split
+        :param min_size: int, minimum number of samples per node
+        :param sample_size: float, subsample size ratio
         :param maximum_depth: int, maximum tree depth
         """
 
@@ -25,8 +27,11 @@ class BiasedRandomForest(object):
         self._num_features_for_split = num_features
         self._k_nearest_neighbors = k
         self._maximum_depth = maximum_depth
+        self._minimum_sample_size = min_size
+        self._sample_ratio = sample_size
 
     def fit(self, X_data, y_labels):
         # todo: sort out the minority class + critical version of the training data
+        # todo: return combined RF as the model
         pass
 
