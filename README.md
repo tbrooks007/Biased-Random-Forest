@@ -1,5 +1,5 @@
 # Biased-Random-Forest
-Basic implementation of Biased Random Forest (BRAF). BRAF's is an ensamble method that seeks to mitigate issues caused by class imbalances in classification propblems by "adequately representing the minority class during classification." The BRAF is based on the implementation found in "Biased Random Forest For Dealing With the Class Imbalance Problem."
+Basic implementation of Biased Random Forest (BRAF) as implemented in Basic implementation of Biased Random Forest (BRAF) as implemented in. BRAF is an ensamble method that seeks to mitigate issues caused by class imbalances in classification propblems by "adequately representing the minority class during classification."
 
 ### Possible Improvements
 
@@ -22,7 +22,6 @@ There are a number of improvements that could be made to this implementation inc
 - `mkvirtualenv braf` (if python 3.X+ is your default python version) OR
 - Type which python3, to get the path of your python3 (i.e. /usr/local/bin/python)
 - `mkvirtualenv -p [Path To Python3] braf`
-
 
 # References
 M. Bader-El-Den, E. Teitei and T. Perry, "Biased Random Forest For Dealing With the Class Imbalance Problem," in IEEE Transactions on Neural Networks and Learning Systems, vol. 30, no. 7, pp. 2163-2172, July 2019, doi: 10.1109/TNNLS.2018.2878400.
