@@ -1,3 +1,18 @@
+from random import randrange
+
+
+def train_test_split(dataset, split=0.75):
+
+    train = list()
+    train_size = split * len(dataset)
+    dataset_copy = list(dataset)
+
+    while len(train) < train_size:
+        index = randrange(len(dataset_copy))
+        train.append(dataset_copy.pop(index))
+
+    return train, dataset_copy
+
 
 def replace_zero_values(df, columns, agg_function='median'):
     """

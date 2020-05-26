@@ -1,10 +1,9 @@
-from math import sqrt
-from biased_random_forest.utils.preprocess import replace_zero_values, scale_numeric_features
+from random import seed
+from biased_random_forest.utils.preprocess import replace_zero_values, scale_numeric_features, train_test_split
+from biased_random_forest.utils.evaluation_metrics_utils import evaluate_algorithm, accuracy_metric
 from biased_random_forest.models.biased_random_forest import BiasedRandomForest
 import pandas as pd
 import os.path
-import numpy
-
 
 def load_csv_as_dataframe(path):
     """
@@ -40,6 +39,30 @@ def preprocess_data(df, columns, target_column, array_agg_function='median'):
     return normalized_df
 
 
+def train_model(df, total_forest_size, k_nearest_neighbors, critical_area_ratio, num_folds=10):
+
+    if not df.empty:
+        # convert dataframe to numpy array for easy of use
+        dataset = processed_pima_df.to_numpy()
+
+        # split dataset
+        seed(1)
+        X_train, x_test = train_test_split(dataset)
+
+        # get max and min label sets
+        max_label_set = set()
+        max_label_set.add(int(df['Outcome'].value_counts().argmax()))
+
+        min_label_set = set()
+        min_label_set.add(int(df['Outcome'].value_counts().argmin()))
+
+        # train BRAF
+        braf = BiasedRandomForest(k=k_nearest_neighbors, p=critical_area_ratio)
+
+        scores = evaluate_algorithm(X_train, braf, total_forest_size, max_label_set, min_label_set, num_folds)
+        print('Scores: %s' % scores)
+        print('Mean Accuracy: %.3f%%' % (sum(scores) / float(len(scores))))
+
 if __name__ == "__main__":
 
     # TODO: read training data, preprocess data, split dataset to train / test sets, train model, then eval by
@@ -60,11 +83,10 @@ if __name__ == "__main__":
 
     print(processed_pima_df.head(5))
 
-    # train RF
-    dataset = processed_pima_df.to_numpy()
-    num_features = int(sqrt(len(dataset[0]) - 1))
+    # set user defined hyperparameters
+    forest_size = 100
+    k = 10
+    p = 0.5
+    num_folds = 10
 
-    # TODO: split train/test datasets and train model on "train"
-
-    braf = BiasedRandomForest(num_features)
-    model = braf.fit(dataset)
+    train_model(processed_pima_df, forest_size, k, p, num_folds)

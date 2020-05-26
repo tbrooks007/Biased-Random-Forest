@@ -1,5 +1,8 @@
 from random import seed
 from random import randrange
+from math import sqrt
+from ..models.k_nearest_neighbors import get_neighbors
+import numpy as np
 
 
 class BiasedRandomForest(object):
@@ -12,10 +15,9 @@ class BiasedRandomForest(object):
     by Jason Brownlee in https://machinelearningmastery.com/implement-random-forest-scratch-python/
     """
 
-    def __init__(self, num_features, min_size=1, sample_size=1.0, forest_size=100, k=10, p=0.5, maximum_depth=10):
+    def __init__(self, k=10, p=0.5, min_size=1, sample_size=1.0, maximum_depth=10):
         """
 
-        :param forest_size: int, forest size
         :param k: int, number of nearest neighbors
         :param p: float, critical areas ratio
         :param num_features: number of features for the split
@@ -28,27 +30,96 @@ class BiasedRandomForest(object):
         seed(2)
 
         # set instance variables
-        self._s_forest_size = forest_size
+        self._s_forest_size = 0
+        self._num_features_for_split = 0
         self._p_critical_areas_ratio = p
-        self._num_features_for_split = num_features
         self._k_nearest_neighbors = k
         self._maximum_depth = maximum_depth
         self._minimum_sample_size = min_size
         self._sample_ratio = sample_size
 
-    def fit(self, X_train):
-        """
+    def fit(self, X_train, total_forest_size, max_label_set, min_label_set):
 
-        :param X_train:
+        # calculate number features
+        self._num_features_for_split = BiasedRandomForest._calculate_number_features(X_train)
+
+        shape = X_train[0].shape[0]
+        # training_maj = np.empty(shape)
+        # training_min = np.empty(shape)
+        # training_c = np.empty(shape)
+
+        training_maj = list()
+        training_min = list()
+        training_c = list()
+
+        # split training data by min/max label sets
+        for row in X_train:
+            # get the target label
+            curr_label = int(row[-1])
+            if curr_label in max_label_set:
+                training_maj.append(row)
+            else:
+                training_min.append(row)
+
+        # find the potential problem areas affecting the minority instances
+        for row_i in training_min:
+            # update critical dataset
+            training_c.append(row_i)
+
+            # find k nearest neighbors for each minority instance in the data set
+            neighbors = get_neighbors(row_i, training_maj, self._k_nearest_neighbors)
+
+            # add unique neighbors to the critical data set
+            for row_j in neighbors:
+                if any((row == x).all() for x in training_c):
+                    training_c.append(row_j)
+
+        # build forest from original dataset
+        self._s_forest_size = int((total_forest_size * (1 - self._p_critical_areas_ratio)))
+        random_forest_1 = self._generate_forest(X_train)
+
+        self._s_forest_size = int((total_forest_size * self._p_critical_areas_ratio))
+        random_forest_2 = self._generate_forest(training_c)
+
+        # combine the two forests to generate main forest
+        #random_forest_1.append(random_forest_2)
+
+        return random_forest_1, random_forest_2
+
+    @staticmethod
+    def _calculate_number_features(dataset):
+
+        return int(sqrt(len(dataset[0]) - 1))
+
+    def predict(self, node, row):
+        """
+        Make a prediction with a decision tree
+        :param node:
+        :param row:
         :return:
         """
 
-        # todo: sort out the minority class + critical version of the training data
-        # todo: return combined RF as the model
+        if row[node['index']] < node['value']:
+            if isinstance(node['left'], dict):
+                return self.predict(node['left'], row)
+            else:
+                return node['left']
+        else:
+            if isinstance(node['right'], dict):
+                return self.predict(node['right'], row)
+            else:
+                return node['right']
 
-        forest = self._generate_forest(X_train)
+    def bagging_predict(self, trees, row):
+        """
+        Make a prediction with a list of bagged trees
+        :param trees:
+        :param row:
+        :return:
+        """
 
-        return forest
+        predictions = [self.predict(tree, row) for tree in trees]
+        return max(set(predictions), key=predictions.count)
 
     @staticmethod
     def _random_subsample(sample_data, ratio):
