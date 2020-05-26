@@ -4,7 +4,7 @@ This project provides a basic implementation of a Biased Random Forest (BRAF). B
 Note, this work is for learning and POC purposes only. The implementation needs work to be production worthy.
 
 ### Dataset
-Pima
+Pima Indians Diabetes Database: "The datasets consist of several medical predictor (independent) variables and one target (dependent) variable, Outcome. Independent variables include the number of pregnancies the patient has had, their BMI, insulin level, age, and so on." (Reference: Kaggle)
 
 ### Setup
 
@@ -49,7 +49,6 @@ Test Recall: 0.4375
 ```
 
 Note, more work is needed to make training and evaluation processes more effienct and more tuning is needed as well. 
-
 
 
 # References
