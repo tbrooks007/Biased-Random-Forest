@@ -4,6 +4,9 @@ from biased_random_forest.utils.evaluation_metrics_utils import evaluate_algorit
 from biased_random_forest.models.biased_random_forest import BiasedRandomForest
 import pandas as pd
 import os.path
+import logging
+
+logging.basicConfig(level=logging.INFO)
 
 def load_csv_as_dataframe(path):
     """
@@ -68,9 +71,9 @@ def train_model(df, total_forest_size, k_nearest_neighbors, critical_area_ratio,
         braf = BiasedRandomForest(k=k_nearest_neighbors, p=critical_area_ratio)
 
         scores, precision, recall = evaluate_algorithm(X_train, braf, total_forest_size, max_label_set, min_label_set, num_folds)
-        print('Mean Accuracy: %.3f%%' % (sum(scores) / float(len(scores))))
-        print('Test Precision: %s' % precision)
-        print('Test Recall: %s' % recall)
+        logging.info('Mean Accuracy: %.3f%%' % (sum(scores) / float(len(scores))))
+        logging.info('Test Precision: %s' % precision)
+        logging.info('Test Recall: %s' % recall)
 
 if __name__ == "__main__":
 
