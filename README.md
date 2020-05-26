@@ -23,7 +23,7 @@ Pima
 
 There are a number of improvements that could be made to this implementation including:
 
-- Try different feature scaling technique (i.e. mean normalization) Currently it uses the default using the min/max approach.
+- Try different feature scaling technique (i.e. mean normalization). Currently it uses the default min/max approach.
 - Try out different cost functions vs Gini Index
 - Try learning the optimal hyperparameters via a means like GridSearch
 - Implement unit tests
@@ -38,7 +38,19 @@ profiler generated html file to the `/eda_output` directory.
  
 ### Training & Model Evaluation
 From root of the project directory, run: `python train.py`.  After training is complete it logs the mean accuracy, 
-test precision and test recall metrics. 
+test precision and test recall metrics to standard out.
+
+#### Local Training Performance Metrics Sample (2-Folds, Forest Size: 100, K-Neighbors=100, Critial Areas Ratio: 0.5)
+
+```
+Mean Accuracy: 74.306%
+Test Precision: 0.7459016393442623
+Test Recall: 0.4375
+```
+
+Note, more work is needed to make training and evaluation processes more effienct and more tuning is needed as well. 
+
+
 
 # References
 M. Bader-El-Den, E. Teitei and T. Perry, "Biased Random Forest For Dealing With the Class Imbalance Problem," in IEEE Transactions on Neural Networks and Learning Systems, vol. 30, no. 7, pp. 2163-2172, July 2019, doi: 10.1109/TNNLS.2018.2878400.
