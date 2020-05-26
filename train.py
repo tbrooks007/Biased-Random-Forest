@@ -90,6 +90,5 @@ if __name__ == "__main__":
     forest_size = 100
     k = 10
     p = 0.5
-    #num_folds = 10
-    num_folds = 2
+    num_folds = 10
     train_model(processed_pima_df, forest_size, k, p, num_folds)

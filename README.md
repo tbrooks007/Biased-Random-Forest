@@ -37,6 +37,8 @@ From root of the project directory, run: `python run_pima_exploratory_data_analy
 profiler generated html file to the `/eda_output` directory.
  
 ### Training & Model Evaluation
+From root of the project directory, run: `python train.py`.  After training is complete it logs the mean accuracy, 
+test precision and test recall metrics. 
 
 # References
 M. Bader-El-Den, E. Teitei and T. Perry, "Biased Random Forest For Dealing With the Class Imbalance Problem," in IEEE Transactions on Neural Networks and Learning Systems, vol. 30, no. 7, pp. 2163-2172, July 2019, doi: 10.1109/TNNLS.2018.2878400.
