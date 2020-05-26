@@ -1,4 +1,5 @@
-
+from random import seed
+from random import randrange
 
 class BiasedRandomForest(object):
     """
@@ -22,6 +23,10 @@ class BiasedRandomForest(object):
         :param maximum_depth: int, maximum tree depth
         """
 
+        # random num generator seed
+        seed(2)
+
+        # set instance variables
         self._s_forest_size = forest_size
         self._p_critical_areas_ratio = p
         self._num_features_for_split = num_features
