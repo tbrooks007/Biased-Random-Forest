@@ -2,8 +2,9 @@ from random import seed
 from random import randrange
 from math import sqrt
 from ..models.k_nearest_neighbors import get_neighbors
-import numpy as np
+import logging
 
+logging.basicConfig(level=logging.INFO)
 
 class BiasedRandomForest(object):
     """
@@ -17,7 +18,6 @@ class BiasedRandomForest(object):
 
     def __init__(self, k=10, p=0.5, min_size=1, sample_size=1.0, maximum_depth=10):
         """
-
         :param k: int, number of nearest neighbors
         :param p: float, critical areas ratio
         :param num_features: number of features for the split
@@ -43,16 +43,12 @@ class BiasedRandomForest(object):
         # calculate number features
         self._num_features_for_split = BiasedRandomForest._calculate_number_features(X_train)
 
-        shape = X_train[0].shape[0]
-        # training_maj = np.empty(shape)
-        # training_min = np.empty(shape)
-        # training_c = np.empty(shape)
-
         training_maj = list()
         training_min = list()
         training_c = list()
 
         # split training data by min/max label sets
+        logging.info("Spliting training data by min/max label sets now...")
         for row in X_train:
             # get the target label
             curr_label = int(row[-1])
@@ -62,6 +58,7 @@ class BiasedRandomForest(object):
                 training_min.append(row)
 
         # find the potential problem areas affecting the minority instances
+        logging.info("Finding problem areas affecting minority instances now...")
         for row_i in training_min:
             # update critical dataset
             training_c.append(row_i)
@@ -71,23 +68,31 @@ class BiasedRandomForest(object):
 
             # add unique neighbors to the critical data set
             for row_j in neighbors:
-                if any((row == x).all() for x in training_c):
+                if not any((row == x).all() for x in training_c):
                     training_c.append(row_j)
 
         # build forest from original dataset
         self._s_forest_size = int((total_forest_size * (1 - self._p_critical_areas_ratio)))
+        logging.info("Training random forest with original dataset now: forest size = {}".format(self._s_forest_size ))
         random_forest_1 = self._generate_forest(X_train)
 
         self._s_forest_size = int((total_forest_size * self._p_critical_areas_ratio))
+        logging.info("Training random forest with critical dataset now: forest size = {}".format(self._s_forest_size))
         random_forest_2 = self._generate_forest(training_c)
 
         # combine the two forests to generate main forest
-        #random_forest_1.append(random_forest_2)
+        logging.info("Combining forests...")
+        main_forest = random_forest_1 + random_forest_2
 
-        return random_forest_1, random_forest_2
+        return main_forest
 
     @staticmethod
     def _calculate_number_features(dataset):
+        """
+        Calculates the number of features to be used in splits.
+        :param dataset:
+        :return: int
+        """
 
         return int(sqrt(len(dataset[0]) - 1))
 
@@ -96,7 +101,7 @@ class BiasedRandomForest(object):
         Make a prediction with a decision tree
         :param node:
         :param row:
-        :return:
+        :return: dict
         """
 
         if row[node['index']] < node['value']:
@@ -152,10 +157,10 @@ class BiasedRandomForest(object):
     @staticmethod
     def _gini_index(groups, classes):
         """
-
+        Calculate gini index aka cost function.
         :param groups:
         :param classes:
-        :return:
+        :return: float
         """
 
         # count all samples at split point
@@ -185,10 +190,10 @@ class BiasedRandomForest(object):
     @staticmethod
     def _split_feature_value(index, value, dataset):
         """
-
+        Split a dataset based on an attribute and an attribute value
         :param value:
         :param dataset:
-        :return:
+        :return: tuple
         """
 
         left, right = list(), list()

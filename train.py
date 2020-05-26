@@ -40,6 +40,14 @@ def preprocess_data(df, columns, target_column, array_agg_function='median'):
 
 
 def train_model(df, total_forest_size, k_nearest_neighbors, critical_area_ratio, num_folds=10):
+    """
+    Train BRAF model.
+    :param df:
+    :param total_forest_size:
+    :param k_nearest_neighbors:
+    :param critical_area_ratio:
+    :param num_folds:
+    """
 
     if not df.empty:
         # convert dataframe to numpy array for easy of use
@@ -59,15 +67,12 @@ def train_model(df, total_forest_size, k_nearest_neighbors, critical_area_ratio,
         # train BRAF
         braf = BiasedRandomForest(k=k_nearest_neighbors, p=critical_area_ratio)
 
-        scores = evaluate_algorithm(X_train, braf, total_forest_size, max_label_set, min_label_set, num_folds)
-        print('Scores: %s' % scores)
+        scores, precision, recall = evaluate_algorithm(X_train, braf, total_forest_size, max_label_set, min_label_set, num_folds)
         print('Mean Accuracy: %.3f%%' % (sum(scores) / float(len(scores))))
+        print('Test Precision: %s' % precision)
+        print('Test Recall: %s' % recall)
 
 if __name__ == "__main__":
-
-    # TODO: read training data, preprocess data, split dataset to train / test sets, train model, then eval by
-    # running predictions for both train and test set (calculate metrics train and test:
-    #   precision, recall, AUPRC and AUROC for 10-fold cross-validation.)
 
     # Load pima data set
     abs_path = os.path.abspath(os.path.dirname(__file__))
@@ -81,12 +86,10 @@ if __name__ == "__main__":
     pima_target_column = 'Outcome'
     processed_pima_df = preprocess_data(pima_dataset_df, columns_with_zero_values, pima_target_column)
 
-    print(processed_pima_df.head(5))
-
     # set user defined hyperparameters
     forest_size = 100
     k = 10
     p = 0.5
-    num_folds = 10
-
+    #num_folds = 10
+    num_folds = 2
     train_model(processed_pima_df, forest_size, k, p, num_folds)
