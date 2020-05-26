@@ -30,6 +30,8 @@ There are a number of improvements that could be made to this implementation inc
 - Refactor to use more object oriented approach for modeling the trees, though we may lose some performance here.
 - Refactor for general run time / space complexity tuning
 - Implement taking in user specified hyperparameters as cmd arguments.
+- Add more model performance evaluation metrics (i.e. AUPRC and AUROC curves)
+- Refactor to save trained models to disk and implement functionality that allows callers to run predictions against the BRAF model.
  
 ### Quick EDA Analysis
 
