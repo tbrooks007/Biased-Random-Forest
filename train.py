@@ -7,10 +7,6 @@ import os.path
 import logging
 
 logging.basicConfig(level=logging.INFO)
-<<<<<<< HEAD
-
-=======
->>>>>>> 11e5660c976e9b98461364134b4f0539d7fd002c
 
 def load_csv_as_dataframe(path):
     """
