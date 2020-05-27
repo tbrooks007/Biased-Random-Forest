@@ -67,10 +67,13 @@ def calculate_classifier_eval_metrics(actual, predicted):
 
 
 def _generate_fold(folds):
+    """
+    Generate test and train set from folds
+    :param folds:
+    :return:
+    """
 
-    train_set = None
-    train_set = None
-    fold_idx = 0
+    fold_idx = -1
 
     for fold in folds:
         # split training set
@@ -87,6 +90,7 @@ def _generate_fold(folds):
             row_copy[-1] = None
 
         fold_idx = fold_idx + 1
+
         yield train_set, test_set, fold_idx, fold
 
 
