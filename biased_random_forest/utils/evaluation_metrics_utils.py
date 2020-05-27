@@ -66,10 +66,11 @@ def calculate_classifier_eval_metrics(actual, predicted):
     return TP, TN, FN, FP
 
 
-def _generate_fold(folds, fold_idx):
+def _generate_fold(folds):
 
     train_set = None
     train_set = None
+    fold_idx = 0
 
     for fold in folds:
         # split training set
@@ -85,7 +86,8 @@ def _generate_fold(folds, fold_idx):
             test_set.append(row_copy)
             row_copy[-1] = None
 
-        yield train_set, test_set, fold
+        fold_idx = fold_idx + 1
+        yield train_set, test_set, fold_idx, fold
 
 
 def _predict(X_test, algorithm, model, fold):
@@ -119,7 +121,7 @@ def calculate_precision_recall(true_positives, false_positives, false_negatives)
     return precision, recall
 
 
-def evaluate(df, algorithm, total_forest_size, max_label_set, min_label_set, n_folds):
+def evaluate(df, algorithm, total_forest_size, max_label_set, min_label_set, k_folds):
     """
     Evaluate model performance using k-cross fold validation.
     :param df:
@@ -127,12 +129,11 @@ def evaluate(df, algorithm, total_forest_size, max_label_set, min_label_set, n_f
     :param total_forest_size:
     :param max_label_set:
     :param min_label_set:
-    :param n_folds:
+    :param k_folds:
     :return: list of calculated eval metrics
     """
 
     scores = list()
-    fold_idx = 0
     true_positives = 0
     true_negatives = 0
     false_negatives = 0
@@ -140,10 +141,11 @@ def evaluate(df, algorithm, total_forest_size, max_label_set, min_label_set, n_f
 
     # convert dataframe to numpy array for easy of use
     dataset = df.to_numpy()
-    folds = generate_validation_folds(dataset, n_folds)
+    folds = generate_validation_folds(dataset, k_folds)
 
-    logging.info("Now training and evaluating fold {} now...".format(fold_idx))
-    for train_set, test_set, fold in _generate_fold(folds, fold_idx):
+    for  train_set, test_set, fold_idx, fold in _generate_fold(folds):
+
+        logging.info("Now training and evaluating fold {} now...".format(fold_idx))
 
         # train model
         trees = algorithm.fit(train_set, total_forest_size, max_label_set, min_label_set)
@@ -162,8 +164,6 @@ def evaluate(df, algorithm, total_forest_size, max_label_set, min_label_set, n_f
         true_negatives += curr_tn
         false_negatives += curr_fn
         false_positives += curr_fp
-
-        fold_idx = fold_idx + 1
 
     # calculate evaluation metrics
     precision, recall = calculate_precision_recall(true_positives, false_positives, false_negatives)
