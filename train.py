@@ -1,9 +1,13 @@
 from random import seed
-from biased_random_forest.utils.preprocess import replace_zero_values, scale_numeric_features, train_test_split
-from biased_random_forest.utils.evaluation_metrics_utils import evaluate_algorithm, accuracy_metric
+from biased_random_forest.utils.preprocess import replace_zero_values, scale_numeric_features, train_test_split, get_min_max_label_sets
+from biased_random_forest.utils.evaluation_metrics_utils import evaluate
 from biased_random_forest.models.biased_random_forest import BiasedRandomForest
 import pandas as pd
 import os.path
+import logging
+
+logging.basicConfig(level=logging.INFO)
+
 
 def load_csv_as_dataframe(path):
     """
@@ -39,40 +43,63 @@ def preprocess_data(df, columns, target_column, array_agg_function='median'):
     return normalized_df
 
 
-def train_model(df, total_forest_size, k_nearest_neighbors, critical_area_ratio, num_folds=10):
+def cross_fold_validation(df, total_forest_size, k_nearest_neighbors, critical_area_ratio, k_folds=10):
+    """
+    Evaluate model performance using k-cross fold validation.
+    :param df:
+    :param total_forest_size:
+    :param k_nearest_neighbors:
+    :param critical_area_ratio:
+    :param k_folds:
+    :return:
+    """
+
+    # get max and min label sets
+    min_label_set, max_label_set = get_min_max_label_sets(df)
+
+    # evaluate model using k-cross fold validation
+    braf = BiasedRandomForest(k=k_nearest_neighbors, p=critical_area_ratio)
+    scores, precision, recall = evaluate(df, braf, total_forest_size, max_label_set, min_label_set, k_folds)
+
+    logging.info('Mean Accuracy: %.3f%%' % (sum(scores) / float(len(scores))))
+    logging.info('Test Precision: %s' % precision)
+    logging.info('Test Recall: %s' % recall)
+
+
+def train_model(df, total_forest_size, k_nearest_neighbors, critical_area_ratio, k_folds=10):
     """
     Train BRAF model.
     :param df:
     :param total_forest_size:
     :param k_nearest_neighbors:
     :param critical_area_ratio:
-    :param num_folds:
+    :param k_folds:
     """
 
     if not df.empty:
+        # get max and min label sets
+        min_label_set, max_label_set = get_min_max_label_sets(df)
+
         # convert dataframe to numpy array for easy of use
-        dataset = processed_pima_df.to_numpy()
+        dataset = df.to_numpy()
 
         # split dataset
-        seed(1)
         X_train, x_test = train_test_split(dataset)
 
-        # get max and min label sets
-        max_label_set = set()
-        max_label_set.add(int(df['Outcome'].value_counts().argmax()))
-
-        min_label_set = set()
-        min_label_set.add(int(df['Outcome'].value_counts().argmin()))
-
-        # train BRAF
+        # train model
         braf = BiasedRandomForest(k=k_nearest_neighbors, p=critical_area_ratio)
+        trees = braf.fit(X_train, total_forest_size, max_label_set, min_label_set)
 
-        scores, precision, recall = evaluate_algorithm(X_train, braf, total_forest_size, max_label_set, min_label_set, num_folds)
-        print('Mean Accuracy: %.3f%%' % (sum(scores) / float(len(scores))))
-        print('Test Precision: %s' % precision)
-        print('Test Recall: %s' % recall)
+        # TODO: validate model w/ test set
+        # TODO: calculate PRC and ROC + flush to disk
+
+        # evaluate the model
+        cross_fold_validation(df, total_forest_size, k_nearest_neighbors, critical_area_ratio, k_folds)
+
 
 if __name__ == "__main__":
+    # set random seed
+    seed(1)
 
     # Load pima data set
     abs_path = os.path.abspath(os.path.dirname(__file__))
@@ -86,9 +113,10 @@ if __name__ == "__main__":
     pima_target_column = 'Outcome'
     processed_pima_df = preprocess_data(pima_dataset_df, columns_with_zero_values, pima_target_column)
 
+    # TODO: taking in params from cmd
     # set user defined hyperparameters
     forest_size = 100
     k = 10
     p = 0.5
-    num_folds = 10
-    train_model(processed_pima_df, forest_size, k, p, num_folds)
+    k_folds = 2
+    train_model(processed_pima_df, forest_size, k, p, k_folds)
