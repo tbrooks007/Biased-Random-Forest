@@ -1,21 +1,22 @@
 from random import randrange
+from biased_random_forest.utils.preprocess import train_test_split
 import logging
 
 logging.basicConfig(level=logging.INFO)
 
 
-def cross_validation_split(dataset, n_folds):
+def generate_validation_folds(dataset, k_folds):
     """
     Performs cross validation split of data set.
     :param dataset:
-    :param n_folds:
-    :return:
+    :param k_folds:
+    :return: list of folds for a given dataset
     """
 
     dataset_split = list()
     dataset_copy = list(dataset)
-    fold_size = int(len(dataset) / n_folds)
-    for i in range(n_folds):
+    fold_size = int(len(dataset) / k_folds)
+    for i in range(k_folds):
         fold = list()
         while len(fold) < fold_size:
             index = randrange(len(dataset_copy))
@@ -24,7 +25,7 @@ def cross_validation_split(dataset, n_folds):
     return dataset_split
 
 
-def accuracy_metric(actual, predicted):
+def calculate_accuracy(actual, predicted):
     """
     Calculate accuracy metric.
     :param actual:
@@ -64,26 +65,11 @@ def calculate_classifier_eval_metrics(actual, predicted):
 
     return TP, TN, FN, FP
 
-def evaluate_algorithm(dataset, algorithm, total_forest_size, max_label_set, min_label_set, n_folds):
-    """
-    Evaluate model performance using k-cross fold validation.
-    :param dataset:
-    :param algorithm:
-    :param total_forest_size:
-    :param max_label_set:
-    :param min_label_set:
-    :param n_folds:
-    :return: list of calculated eval metrics
-    """
 
-    trees = None
-    fold_idx = 0
-    TP = 0
-    TN = 0
-    FN = 0
-    FP = 0
-    folds = cross_validation_split(dataset, n_folds)
-    scores = list()
+def _generate_fold(folds, fold_idx):
+
+    train_set = None
+    train_set = None
 
     for fold in folds:
         # split training set
@@ -94,33 +80,94 @@ def evaluate_algorithm(dataset, algorithm, total_forest_size, max_label_set, min
         # split test set
         test_set = list()
 
-        logging.info("Now training and evaluating fold {} now...".format(fold_idx))
         for row in fold:
             row_copy = list(row)
             test_set.append(row_copy)
             row_copy[-1] = None
 
+        yield train_set, test_set, fold
+
+
+def _predict(X_test, algorithm, model, fold):
+    """
+    Predict labels for test set for a gien
+    :param X_test:
+    :param algorithm:
+    :param model:
+    :param fold:
+    :return:
+    """
+
+    predicted = [algorithm.bagging_predict(model, row) for row in X_test]
+    actual = [row[-1] for row in fold]
+
+    return predicted, actual
+
+
+def calculate_precision_recall(true_positives, false_positives, false_negatives):
+    """
+    Calculates precision and recall metrics
+    :param true_positives:
+    :param false_positives:
+    :param false_negatives:
+    :return:
+    """
+
+    precision = true_positives / (true_positives + false_positives)
+    recall = true_positives / (true_positives + false_negatives)
+
+    return precision, recall
+
+
+def evaluate(df, algorithm, total_forest_size, max_label_set, min_label_set, n_folds):
+    """
+    Evaluate model performance using k-cross fold validation.
+    :param df:
+    :param algorithm:
+    :param total_forest_size:
+    :param max_label_set:
+    :param min_label_set:
+    :param n_folds:
+    :return: list of calculated eval metrics
+    """
+
+    scores = list()
+    fold_idx = 0
+    true_positives = 0
+    true_negatives = 0
+    false_negatives = 0
+    false_positives = 0
+
+    # convert dataframe to numpy array for easy of use
+    dataset = df.to_numpy()
+    folds = generate_validation_folds(dataset, n_folds)
+
+    logging.info("Now training and evaluating fold {} now...".format(fold_idx))
+    for train_set, test_set, fold in _generate_fold(folds, fold_idx):
+
+        # train model
         trees = algorithm.fit(train_set, total_forest_size, max_label_set, min_label_set)
 
+        # run inference
         logging.info("Evaluating model for fold {} now (# of trees in forest: {})...".format(fold_idx, len(trees)))
-        predicted = [algorithm.bagging_predict(trees, row) for row in test_set]
-        actual = [row[-1] for row in fold]
+        predicted, actual = _predict(test_set, algorithm, trees, fold)
 
-        # calculate accuraccy
-        accuracy = accuracy_metric(actual, predicted)
+        # calculate accuracy for current model
+        accuracy = calculate_accuracy(actual, predicted)
         scores.append(accuracy)
 
         # calculate classifier evaluation metrics
         curr_tp, curr_tn, curr_fn, curr_fp = calculate_classifier_eval_metrics(actual, predicted)
-        TP += curr_tp
-        TN += curr_tn
-        FN += curr_fn
-        FP += curr_fp
+        true_positives += curr_tp
+        true_negatives += curr_tn
+        false_negatives += curr_fn
+        false_positives += curr_fp
 
-        fold_idx += 1
+        fold_idx = fold_idx + 1
 
-    # calculate P/R
-    precision = TP/(TP + FP)
-    recall = TP/(TP + FN)
+    # calculate evaluation metrics
+    precision, recall = calculate_precision_recall(true_positives, false_positives, false_negatives)
+
+    # TODO: calculate PRC and ROC + flush to disk
 
     return scores, precision, recall

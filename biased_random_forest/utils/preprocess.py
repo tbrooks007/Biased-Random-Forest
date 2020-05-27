@@ -2,6 +2,12 @@ from random import randrange
 
 
 def train_test_split(dataset, split=0.75):
+    """
+    Functions splits dataset into training and test datasets.
+    :param dataset:
+    :param split:
+    :return: train, test datasets
+    """
 
     train = list()
     train_size = split * len(dataset)
@@ -13,6 +19,22 @@ def train_test_split(dataset, split=0.75):
 
     return train, dataset_copy
 
+
+def get_min_max_label_sets(df):
+    """
+    Get min and max label sets.
+    :param df: dataframe
+    :return: min and max label sets
+    """
+
+    # get max and min label sets
+    max_label_set = set()
+    max_label_set.add(int(df['Outcome'].value_counts().argmax()))
+
+    min_label_set = set()
+    min_label_set.add(int(df['Outcome'].value_counts().argmin()))
+
+    return min_label_set, max_label_set
 
 def replace_zero_values(df, columns, agg_function='median'):
     """
