@@ -47,7 +47,7 @@ test precision and test recall metrics to standard out.
 ```
 Mean Accuracy: Accuracy: 90.495%
 Test Precision: 0.83
-Test Recall: 0.918
+Test Recall: 0.92
 ```
 
 Note, more work is needed to make training and evaluation processes more effienct and more tuning is needed as well. 
