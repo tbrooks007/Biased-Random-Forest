@@ -293,10 +293,10 @@ class BiasedRandomForest(object):
 
         return root
 
-    def _generate_forest(self, X_train):
+    def _generate_forest(self, x_train):
         """
         Generates random forest.
-        :param X_train: multidimensional array
+        :param x_train: multidimensional array
         :return: list of tress (dicts)
         """
 
@@ -304,11 +304,12 @@ class BiasedRandomForest(object):
 
         for i in range(self._s_forest_size):
             # get random subsample
-            subsample = BiasedRandomForest._random_subsample(X_train, self._sample_ratio)
+            subsample = BiasedRandomForest._random_subsample(x_train, self._sample_ratio)
 
             # build tree from subsample
             tree = self._build_tree(subsample)
             trees.append(tree)
 
+            logging.info('... Generated tree # {} of {} trees.'.format(i, self._s_forest_size))
         return trees
 

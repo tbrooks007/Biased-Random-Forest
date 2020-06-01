@@ -1,6 +1,20 @@
 from random import randrange
 
 
+def split_data_from_target_columns(df, target_column):
+    """
+    Splits the columns from the data from .target columns.
+    :param df: pandas dataframe
+    :param target_column: string
+    :return:
+    """
+
+    x = df.loc[:, df.columns != target_column]
+    y = df.loc[:, target_column]
+
+    return x, y
+
+
 def train_test_split(dataset, split=0.75):
     """
     Functions splits dataset into training and test datasets.
@@ -35,6 +49,7 @@ def get_min_max_label_sets(df):
     min_label_set.add(int(df['Outcome'].value_counts().argmin()))
 
     return min_label_set, max_label_set
+
 
 def replace_zero_values(df, columns, agg_function='median'):
     """
