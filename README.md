@@ -45,7 +45,6 @@ test precision and test recall metrics to standard out.
 #### Local Training Performance Metrics Sample (2-Folds, Forest Size: 100, K-Neighbors=100, Critial Areas Ratio: 0.5)
 
 ```
-Mean Accuracy: Accuracy: 90.495%
 Test Precision: 0.83
 Test Recall: 0.92
 ```
